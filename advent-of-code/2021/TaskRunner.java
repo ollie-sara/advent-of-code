@@ -7,7 +7,8 @@ public class TaskRunner {
 	static AoCTask[] tasks = new AoCTask[] { new Day1(),
 											 new Day2(),
 											 new Day3(),
-											 new Day4()
+											 new Day4(),
+											 new Day5()
 											};
 	
 	public static void main(String[] args) throws FileNotFoundException {
