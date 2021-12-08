@@ -19,8 +19,6 @@ public class Day7 implements AoCTask {
 			crabs[i] = out.get(i);
 			maxPos = Math.max(maxPos, crabs[i]);
 		}
-		
-		System.out.println(Arrays.toString(crabs));
 	}
 
 	@Override
