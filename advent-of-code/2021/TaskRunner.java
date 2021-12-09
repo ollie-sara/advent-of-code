@@ -11,7 +11,8 @@ public class TaskRunner {
 											 new Day5(),
 											 new Day6(),
 											 new Day7(),
-											 new Day8()
+											 new Day8(),
+											 new Day9()
 											};
 	
 	public static void main(String[] args) throws FileNotFoundException {
