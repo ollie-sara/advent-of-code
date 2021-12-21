@@ -4,7 +4,8 @@ import java.util.Scanner;
 
 public class TaskRunner {
 
-	static AoCTask[] tasks = new AoCTask[] { new Day20()
+	static AoCTask[] tasks = new AoCTask[] { new Day20(),
+											 new Day21()
 											};
 	
 	public static void main(String[] args) throws FileNotFoundException {
