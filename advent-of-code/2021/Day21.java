@@ -87,7 +87,6 @@ public class Day21 implements AoCTask {
 				for(int s2 = 0; s2 < 31; s2++) {
 					for(int p1 = 0; p1 < 10; p1++) {
 						for(int p2 = 0; p2 < 10; p2++) {
-							if(s1 >= 21 && s2 >= 21 && game[r][s1][s2][p1][p2] > 0) System.out.println("TWO WINNERS!!!!");
 							if(s1 >= 21) count1 += game[r][s1][s2][p1][p2];
 							if(s2 >= 21) count2 += game[r][s1][s2][p1][p2];
 						}
