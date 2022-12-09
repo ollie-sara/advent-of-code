@@ -7,7 +7,17 @@
         "deque": "cpp",
         "string": "cpp",
         "vector": "cpp",
-        "map": "cpp"
+        "map": "cpp",
+        "cmath": "cpp",
+        "*.tcc": "cpp",
+        "random": "cpp",
+        "istream": "cpp",
+        "limits": "cpp",
+        "memory": "cpp",
+        "numeric": "cpp",
+        "streambuf": "cpp",
+        "tuple": "cpp",
+        "iosfwd": "cpp"
     },
     "C_Cpp.errorSquiggles": "enabled"
 }

@@ -1,4 +1,4 @@
-DAY=8
+DAY=9
 CC=g++
 
 all: run clean
