@@ -5,6 +5,7 @@
 #include <sstream>
 #include <cstring>
 #include <cctype>
+#include <chrono>
 
 using namespace std;
 
@@ -70,7 +71,7 @@ dir* create_filesystem() {
                     curr = (dir*) curr->parent;
                 } else {
                     if(!curr->items.contains(dirname)) {
-                        cout << "+dir " + dirname + " in " + curr->name << endl;
+                        // cout << "+dir " + dirname + " in " + curr->name << endl;
                         dir* n_dir = new dir(dirname, curr);
                         curr->items[dirname] = n_dir;
                     }
@@ -87,7 +88,7 @@ dir* create_filesystem() {
                 it >> dirname;
                 dirname.erase(std::remove_if(dirname.begin(), dirname.end(), ::isspace), dirname.end());
                 if(!curr->items.contains(dirname)) {
-                    cout << "+dir " + dirname + " in " + curr->name << endl;
+                    // cout << "+dir " + dirname + " in " + curr->name << endl;
                     dir* n_dir = new dir(dirname, curr);
                     curr->items[dirname] = n_dir;
                 }
@@ -98,7 +99,7 @@ dir* create_filesystem() {
                 it >> filename;
                 filename.erase(std::remove_if(filename.begin(), filename.end(), ::isspace), filename.end());
                 if(!curr->items.contains(filename)) {
-                    cout << "+file " + filename + " in " + curr->name << endl;
+                    // cout << "+file " + filename + " in " + curr->name << endl;
                     file* n_file = new file(filename, size, curr);
                     curr->items[filename] = n_file;
                 }
@@ -180,12 +181,17 @@ void print_filesystem(item* itm, int tabs) {
 }
 
 int main() {
+    auto start = chrono::high_resolution_clock::now();
     dir* root = create_filesystem();
     
     cout << sum_max_100k(root) << endl;
     cout << which_to_delete(70'000'000L, 30'000'000L, root->size, root)->size << endl;
 
-    print_filesystem((item*) root, 0);
+    // print_filesystem((item*) root, 0);
+
+    auto stop = chrono::high_resolution_clock::now();
+    auto duration = chrono::duration_cast<chrono::microseconds>(stop - start);
+    cout << "elapsed time: " << duration.count() << endl;
 
     return 0;
 }

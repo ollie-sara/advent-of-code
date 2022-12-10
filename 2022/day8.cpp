@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <chrono>
 
 using namespace std;
 
@@ -123,10 +124,15 @@ vector<vector<int>> init_map() {
 }
 
 int main() {
+    auto start = chrono::high_resolution_clock::now();
 
     vector<vector<int>> map = init_map();
     task1(map);
     task2(map);
+
+    auto stop = chrono::high_resolution_clock::now();
+    auto duration = chrono::duration_cast<chrono::microseconds>(stop - start);
+    cout << "elapsed time: " << duration.count() << endl;
     
     return 0;
 }

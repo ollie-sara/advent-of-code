@@ -2,6 +2,7 @@
 #include <fstream>
 #include <stack>
 #include <vector>
+#include <chrono>
 
 using namespace std;
 
@@ -122,9 +123,14 @@ void task2() {
 }
 
 int main() {
+    auto start = chrono::high_resolution_clock::now();
     
     task1();
     task2();
+
+    auto stop = chrono::high_resolution_clock::now();
+    auto duration = chrono::duration_cast<chrono::microseconds>(stop - start);
+    cout << "elapsed time: " << duration.count() << endl;
 
     return 0;
 }
