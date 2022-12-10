@@ -27,7 +27,7 @@ class CPU {
 
         void cycle() {
             if(draw) {
-                std::cout << (is_lit() ? '#' : '.');
+                std::cout << (is_lit() ? "\u2588" : " ");
                 if(is_nl()) std::cout << std::endl;
             }
 
