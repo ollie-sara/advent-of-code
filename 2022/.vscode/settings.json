@@ -7,8 +7,7 @@
         "deque": "cpp",
         "string": "cpp",
         "vector": "cpp",
-        "map": "cpp",
-        "chrono": "cpp"
+        "map": "cpp"
     },
     "C_Cpp.errorSquiggles": "enabled"
 }
