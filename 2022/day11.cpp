@@ -76,8 +76,7 @@ class Monkey {
             long item;
             std::stringstream stream(line);
             
-            stream >> temp;
-            stream >> temp;
+            stream >> temp >> temp;
 
             while(stream >> item) {
                 items.push(item);
@@ -97,12 +96,7 @@ class Monkey {
             char op;
 
             std::stringstream stream(line);
-            stream >> opr1;
-            stream >> opr1;
-            stream >> opr1;
-            stream >> opr1;
-            stream >> op;
-            stream >> opr2;
+            stream >> opr1 >> opr1 >> opr1 >> opr1 >> op >> opr2;
 
             auto binop = [op](long a, long b) {
                 switch(op) {
@@ -131,10 +125,7 @@ class Monkey {
         void parse_test(std::string &line) {
             std::string temp;
             std::stringstream stream(line);
-            stream >> temp;
-            stream >> temp;
-            stream >> temp;
-            stream >> divisor;
+            stream >> temp >> temp >> temp >> divisor;
         }
 
         /**
@@ -149,12 +140,7 @@ class Monkey {
             std::string temp;
             std::stringstream stream(line);
 
-            stream >> temp;
-            stream >> temp;
-            stream >> temp;
-            stream >> temp;
-            stream >> temp;
-            stream >> to;
+            stream >> temp >> temp >> temp >> temp >> temp >> to;
 
             auto func = [to](Monkey *monk, long &worry){
                 monk->items.pop();
