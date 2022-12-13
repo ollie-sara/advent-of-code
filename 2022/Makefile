@@ -1,4 +1,4 @@
-DAY=12
+DAY=13
 CC=g++
 
 .PHONY: all run time clean
