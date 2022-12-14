@@ -3,10 +3,12 @@
 #include <unordered_set>
 #include <vector>
 #include <sstream>
+#include <memory>
 
 using std::ifstream;
 using std::stringstream;
 using std::string;
+using std::shared_ptr;
 
 class SandSimulator {
 
@@ -26,58 +28,46 @@ class SandSimulator {
     private:
         pset rocks;
         pset set_sand;
-        plist sand;
+        shared_ptr<plist> sand;
         point spawn;
         int max_depth;
         int min_x, max_x;
         
-        bool move_sand(point& p, plist* n, bool floor) {
+        void move_sand(point& p, shared_ptr<plist> n, bool floor) {
             auto blocked = [n, this, floor](point p) {
-                auto blocked_sand = [n](point& p) {
-                    for(const auto& s : (*n)) {
-                        if(p == s) return true;
-                    }
-                    return false;
-                };
-                return (floor && p.second == max_depth+2) || this->rocks.contains(p) || this->set_sand.contains(p) || blocked_sand(p);
+                return (floor && p.second == max_depth+2) || this->rocks.contains(p) || this->set_sand.contains(p);
             };
 
             if(p.first+1 > max_x) max_x = p.first+1;
             if(p.first-1 < min_x) min_x = p.first-1;
 
             if(!blocked({p.first, p.second+1})) { // directly down
-                if(p.second <= max_depth+2) (*n).push_back({p.first, p.second+1});
-                return true;
+                if(p.second <= max_depth+2) n->push_back({p.first, p.second+1});
             } else if(!blocked({p.first-1, p.second+1})) { // down to the left
-                if(p.second <= max_depth+2) (*n).push_back({p.first-1, p.second+1});
-                return true;
+                if(p.second <= max_depth+2) n->push_back({p.first-1, p.second+1});
             } else if(!blocked({p.first+1, p.second+1})) { // down to the right 
-                if(p.second <= max_depth+2) (*n).push_back({p.first+1, p.second+1});
-                return true;
+                if(p.second <= max_depth+2) n->push_back({p.first+1, p.second+1});
             } else { // rest
                 set_sand.emplace(p);
-                return false;
             }
-        }
-
-        bool spawn_blocked() {
-            for(point p : sand) {
-                if(p == spawn) return true;
-            }
-            return false;
         }
 
         int run_to_fixpoint(bool print = false, bool floor = false) {
-            plist old_sand;
+            shared_ptr<plist> curr_sand = sand;
+            int set_sand_size, sand_size;
             do {
-                old_sand = sand;
-                sand = plist();
-                for(point p : old_sand) {
-                    !move_sand(p, &sand, floor);
+                sand_size = sand->size();
+                set_sand_size = set_sand.size();
+                shared_ptr<plist> n_sand = std::make_shared<plist>();
+
+                for(point p : *sand) {
+                    move_sand(p, n_sand, floor);
                 }
-                if(!spawn_blocked()) sand.push_back(spawn);
+
                 if(print) print_map();
-            } while(!(old_sand == sand));
+                sand = n_sand;
+                if(sand->size() == 0 || !(sand->back() == spawn)) sand->push_back(spawn); 
+            } while(set_sand.size() == 0 || !(set_sand_size == set_sand.size() && sand_size == sand->size()));
             return set_sand.size();
         }
 
@@ -122,7 +112,7 @@ class SandSimulator {
             ifstream input(path);
             rocks = pset();
             set_sand = pset();
-            sand = plist();
+            sand = std::make_shared<plist>();
             max_depth = -1;
             min_x = 999999;
             max_x = -1;
@@ -142,9 +132,11 @@ class SandSimulator {
 
         void print_map() {
             std::cout << "--------------------------------" << std::endl;
+            pset set_moving_sand;
+            for(point p : *sand) set_moving_sand.emplace(p);
             for(int i = 0; i <= max_depth+1; i++) {
                 for(int j = min_x; j <= max_x; j++) {
-                    std::cout << (rocks.contains({j,i}) ? "#" : (set_sand.contains({j,i}) ? "o" : (point(j,i) == spawn ? "+" : ".")));
+                    std::cout << (rocks.contains({j,i}) ? "#" : (set_sand.contains({j,i}) ? "o" : (point(j,i) == spawn ? "+" : (set_moving_sand.contains({j,i}) ? "~" : "."))));
                 }
                 std::cout << std::endl;
             }
@@ -166,5 +158,5 @@ int main() {
     SandSimulator sim("input/day14.txt");
 
     std::cout << sim.get_number_of_immobile() << std::endl;
-    std::cout << sim.get_number_of_immobile_floored() << std::endl;
+    std::cout << sim.get_number_of_immobile_floored(false) << std::endl;
 }
