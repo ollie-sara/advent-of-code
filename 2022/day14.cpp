@@ -1,14 +1,19 @@
 #include <fstream>
 #include <iostream>
-#include <unordered_set>
 #include <vector>
+#include <set>
+#include <unordered_set>
+#include <unordered_map>
 #include <sstream>
-#include <memory>
+#include <chrono>
 
 using std::ifstream;
 using std::stringstream;
 using std::string;
-using std::shared_ptr;
+using std::numeric_limits;
+
+#define MIN_INT numeric_limits<int>::min()
+#define MAX_INT numeric_limits<int>::max()
 
 class SandSimulator {
 
@@ -23,51 +28,71 @@ class SandSimulator {
 
         typedef std::pair<int, int> point; // first = x, second = depth
         typedef std::vector<point> plist;
-        typedef std::unordered_set<point, pair_hash> pset;
+
+        struct pset {
+            std::unordered_set<point, pair_hash> hashset;
+            std::unordered_map<int, std::set<int>> treeset;
+
+            bool contains(const point& p) {
+                return hashset.contains(p);
+            }
+
+            void emplace(const point& p) {
+                hashset.emplace(p);
+                treeset[p.first].emplace(p.second);
+            }
+
+            int upper_bound(const point& p) {
+                auto out = treeset[p.first].upper_bound(p.second);
+                return (out == treeset[p.first].end() ? MAX_INT : *out);
+            }
+
+            int size() {
+                return hashset.size();
+            }
+        };
 
     private:
         pset rocks;
         pset set_sand;
-        shared_ptr<plist> sand;
         point spawn;
         int max_depth;
         int min_x, max_x;
         
-        void move_sand(point& p, shared_ptr<plist> n, bool floor) {
-            auto blocked = [n, this, floor](point p) {
+        void move_sand(point& p, bool floor) {
+            auto blocked = [this, floor](point p) {
                 return (floor && p.second == max_depth+2) || this->rocks.contains(p) || this->set_sand.contains(p);
             };
 
-            if(p.first+1 > max_x) max_x = p.first+1;
-            if(p.first-1 < min_x) min_x = p.first-1;
+            point n_p = p;
 
-            if(!blocked({p.first, p.second+1})) { // directly down
-                if(p.second <= max_depth+2) n->push_back({p.first, p.second+1});
-            } else if(!blocked({p.first-1, p.second+1})) { // down to the left
-                if(p.second <= max_depth+2) n->push_back({p.first-1, p.second+1});
-            } else if(!blocked({p.first+1, p.second+1})) { // down to the right 
-                if(p.second <= max_depth+2) n->push_back({p.first+1, p.second+1});
-            } else { // rest
-                set_sand.emplace(p);
+            while(true) {
+                // drop down as far as possible
+                n_p = {n_p.first, std::min(set_sand.upper_bound(n_p), std::min(rocks.upper_bound(n_p), max_depth+2))-1};
+
+                if(!floor && n_p.second > max_depth) {
+                    return;
+                } else if(!blocked({n_p.first-1, n_p.second+1})) { // down to the left
+                    if(n_p.second <= max_depth+2) n_p = point(n_p.first-1, n_p.second+1);
+                } else if(!blocked({n_p.first+1, n_p.second+1})) { // down to the right 
+                    if(n_p.second <= max_depth+2) n_p = point(n_p.first+1, n_p.second+1);
+                } else { // rest
+                    if(n_p.first+1 > max_x) max_x = n_p.first+1;
+                    if(n_p.first-1 < min_x) min_x = n_p.first-1;
+
+                    set_sand.emplace(n_p);
+                    return;
+                }
             }
         }
 
         int run_to_fixpoint(bool print = false, bool floor = false) {
-            shared_ptr<plist> curr_sand = sand;
             int set_sand_size, sand_size;
             do {
-                sand_size = sand->size();
                 set_sand_size = set_sand.size();
-                shared_ptr<plist> n_sand = std::make_shared<plist>();
-
-                for(point p : *sand) {
-                    move_sand(p, n_sand, floor);
-                }
-
+                move_sand(spawn, floor);
                 if(print) print_map();
-                sand = n_sand;
-                if(sand->size() == 0 || !(sand->back() == spawn)) sand->push_back(spawn); 
-            } while(set_sand.size() == 0 || !(set_sand_size == set_sand.size() && sand_size == sand->size()));
+            } while(set_sand.size() == 0 || !(set_sand_size == set_sand.size()));
             return set_sand.size();
         }
 
@@ -112,10 +137,9 @@ class SandSimulator {
             ifstream input(path);
             rocks = pset();
             set_sand = pset();
-            sand = std::make_shared<plist>();
-            max_depth = -1;
-            min_x = 999999;
-            max_x = -1;
+            max_depth = MIN_INT;
+            min_x = MAX_INT;
+            max_x = MIN_INT;
             spawn = point(500,0);
 
             string line;
@@ -133,10 +157,9 @@ class SandSimulator {
         void print_map() {
             std::cout << "--------------------------------" << std::endl;
             pset set_moving_sand;
-            for(point p : *sand) set_moving_sand.emplace(p);
             for(int i = 0; i <= max_depth+1; i++) {
                 for(int j = min_x; j <= max_x; j++) {
-                    std::cout << (rocks.contains({j,i}) ? "#" : (set_sand.contains({j,i}) ? "o" : (point(j,i) == spawn ? "+" : (set_moving_sand.contains({j,i}) ? "~" : "."))));
+                    std::cout << (rocks.contains({j,i}) ? "#" : (set_sand.contains({j,i}) ? "o" : (point(j,i) == spawn ? "+" : ".")));
                 }
                 std::cout << std::endl;
             }
@@ -157,6 +180,11 @@ class SandSimulator {
 int main() {
     SandSimulator sim("input/day14.txt");
 
+    auto start = std::chrono::high_resolution_clock::now();
     std::cout << sim.get_number_of_immobile() << std::endl;
-    std::cout << sim.get_number_of_immobile_floored(false) << std::endl;
+    std::cout << sim.get_number_of_immobile_floored() << std::endl;
+    auto stop = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+    double time = duration.count();
+    std::cout << "elapsed (ms): " << (time * 0.001) << std::endl;
 }
