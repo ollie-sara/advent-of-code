@@ -5,7 +5,7 @@ CC=g++
 
 all: run clean
 run: $(addprefix day, $(addsuffix .cpp, $(DAY)))
-	$(CC) $(addprefix day, $(addsuffix .cpp, $(DAY))) -o a.out -std=c++2a -Ofast
+	$(CC) $(addprefix day, $(addsuffix .cpp, $(DAY))) -o a.out -std=c++2a -Ofast -I/home/olive/cpp-libs/or-tools/include -Wall
 	./a.out
 
 time: hyperfine clean
